@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//Users/max/repo_claude/**)",
+      "Bash(mv Calliope calliope-temp)",
+      "Bash(npx create-next-app@latest calliope --typescript --tailwind --eslint --app --src-dir --import-alias \"@/*\" --use-npm)",
+      "Bash(npx shadcn@latest init -d)"
+    ]
+  }
+}
