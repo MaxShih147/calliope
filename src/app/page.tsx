@@ -1,65 +1,222 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { Switch } from "@/components/ui/switch";
+import {
+  LessonInput,
+  SCENARIOS,
+  TONES,
+  DIFFICULTIES,
+  LENGTHS,
+  Lesson,
+} from "@/lib/types";
+import { generateLesson } from "@/lib/ai";
+import { saveLesson, getSettings, getAllLessons } from "@/lib/storage";
+import { RecentLessons } from "@/components/recent-lessons";
+import { DiscoverTopics } from "@/components/discover-topics";
+
+export default function ComposePage() {
+  const router = useRouter();
+  const [mounted, setMounted] = useState(false);
+  const [selectedScenario, setSelectedScenario] = useState("");
+  const [topic, setTopic] = useState("");
+  const [tone, setTone] = useState("professional");
+  const [difficulty, setDifficulty] = useState("intermediate");
+  const [length, setLength] = useState("medium");
+  const [advancedExpressions, setAdvancedExpressions] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [recentLessons, setRecentLessons] = useState<Lesson[]>([]);
+
+  useEffect(() => {
+    setMounted(true);
+    const settings = getSettings();
+    if (settings.defaultTone) setTone(settings.defaultTone);
+    if (settings.defaultDifficulty) setDifficulty(settings.defaultDifficulty);
+    if (settings.defaultLength) setLength(settings.defaultLength);
+    setRecentLessons(getAllLessons().slice(0, 5));
+  }, []);
+
+  async function handleCompose() {
+    if (!selectedScenario) {
+      setError("Please select a scenario.");
+      return;
+    }
+
+    const settings = getSettings();
+    if (!settings.apiKey) {
+      setError("Please add your API key in Settings first.");
+      return;
+    }
+
+    setLoading(true);
+    setError("");
+
+    try {
+      const input: LessonInput = {
+        scenario: selectedScenario,
+        topic: topic || undefined,
+        tone: tone as LessonInput["tone"],
+        difficulty: difficulty as LessonInput["difficulty"],
+        length: length as LessonInput["length"],
+        includeAdvancedExpressions: advancedExpressions,
+      };
+
+      const lesson = await generateLesson(input, settings.apiKey);
+      saveLesson(lesson);
+      router.push(`/lesson/${lesson.id}`);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Something went wrong.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  if (!mounted) return null;
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
+    <div className="mx-auto max-w-[720px] px-6">
+      {/* Page title */}
+      <div className="pt-12 pb-10 animate-fade-up">
+        <h1 className="font-serif text-[2.5rem] font-light tracking-tight leading-[1.1] mb-3">
+          Compose
+        </h1>
+        <p className="font-serif text-[1.0625rem] italic text-stone-400 leading-relaxed">
+          Shape a speaking lesson around a scenario that matters to you.
+        </p>
+      </div>
+
+      <div className="hairline mb-10" />
+
+      {/* Scenario */}
+      <section className="mb-12 animate-fade-up" style={{ animationDelay: "0.05s" }}>
+        <p className="section-label mb-5">Scenario</p>
+        <div className="flex flex-wrap gap-2.5">
+          {SCENARIOS.map((scenario) => (
+            <button
+              key={scenario}
+              onClick={() => {
+                setSelectedScenario(scenario);
+                setError("");
+              }}
+              className={`chip ${selectedScenario === scenario ? "chip-active" : ""}`}
+            >
+              {scenario}
+            </button>
+          ))}
+        </div>
+      </section>
+
+      {/* Topic input */}
+      <section className="mb-6 animate-fade-up" style={{ animationDelay: "0.1s" }}>
+        <p className="section-label mb-4">Topic</p>
+        <input
+          value={topic}
+          onChange={(e) => setTopic(e.target.value)}
+          placeholder="A subject to anchor the conversation..."
+          className="w-full bg-transparent font-serif text-base text-foreground placeholder:text-stone-300 placeholder:italic border-b border-rule pb-3 focus:outline-none focus:border-foreground transition-colors"
         />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+      </section>
+
+      {/* Discover */}
+      <section className="mb-12 animate-fade-up" style={{ animationDelay: "0.15s" }}>
+        <DiscoverTopics onSelect={(title) => setTopic(title)} />
+      </section>
+
+      <div className="hairline mb-10" />
+
+      {/* Controls */}
+      <section className="mb-10 animate-fade-up" style={{ animationDelay: "0.2s" }}>
+        <div className="grid grid-cols-3 gap-12">
+          <div>
+            <p className="section-label mb-4">Tone</p>
+            <div className="space-y-1">
+              {TONES.map((t) => (
+                <button
+                  key={t.value}
+                  onClick={() => setTone(t.value)}
+                  className={`opt ${tone === t.value ? "opt-active" : ""}`}
+                >
+                  {t.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <p className="section-label mb-4">Difficulty</p>
+            <div className="space-y-1">
+              {DIFFICULTIES.map((d) => (
+                <button
+                  key={d.value}
+                  onClick={() => setDifficulty(d.value)}
+                  className={`opt ${difficulty === d.value ? "opt-active" : ""}`}
+                >
+                  {d.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <p className="section-label mb-4">Length</p>
+            <div className="space-y-1">
+              {LENGTHS.map((l) => (
+                <button
+                  key={l.value}
+                  onClick={() => setLength(l.value)}
+                  className={`opt ${length === l.value ? "opt-active" : ""}`}
+                >
+                  {l.label}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+      </section>
+
+      {/* Advanced toggle */}
+      <section className="mb-12 animate-fade-up" style={{ animationDelay: "0.25s" }}>
+        <div className="flex items-center gap-3">
+          <Switch
+            id="advanced"
+            checked={advancedExpressions}
+            onCheckedChange={setAdvancedExpressions}
+          />
+          <label
+            htmlFor="advanced"
+            className="text-[0.8125rem] text-stone-400 cursor-pointer"
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+            Include advanced expressions
+          </label>
         </div>
-      </main>
+      </section>
+
+      {/* Error */}
+      {error && (
+        <p className="text-sm text-destructive mb-6 font-sans">{error}</p>
+      )}
+
+      {/* Compose button */}
+      <div className="mb-16 animate-fade-up" style={{ animationDelay: "0.3s" }}>
+        <button
+          onClick={handleCompose}
+          disabled={loading}
+          className="btn-compose"
+        >
+          {loading ? "Composing..." : "Compose"}
+        </button>
+      </div>
+
+      {/* Recent */}
+      {recentLessons.length > 0 && (
+        <section className="pb-16 animate-fade-up" style={{ animationDelay: "0.35s" }}>
+          <div className="hairline mb-10" />
+          <p className="section-label mb-6">Recent</p>
+          <RecentLessons lessons={recentLessons} />
+        </section>
+      )}
     </div>
   );
 }
