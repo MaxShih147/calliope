@@ -4,7 +4,20 @@
       "Read(//Users/max/repo_claude/**)",
       "Bash(mv Calliope calliope-temp)",
       "Bash(npx create-next-app@latest calliope --typescript --tailwind --eslint --app --src-dir --import-alias \"@/*\" --use-npm)",
-      "Bash(npx shadcn@latest init -d)"
+      "Bash(npx shadcn@latest init -d)",
+      "Bash(npx shadcn@latest add input label select switch textarea badge separator scroll-area dialog -y)",
+      "Bash(npm run:*)",
+      "Bash(curl -s http://localhost:3000)",
+      "Bash(kill %1)",
+      "Bash(pkill -f \"next dev\")",
+      "Bash(open:*)",
+      "Bash(npx next:*)",
+      "Bash(curl:*)",
+      "Bash(git add:*)",
+      "Bash(git commit -m ':*)",
+      "Bash(git remote:*)",
+      "Bash(git push:*)",
+      "Bash(git branch:*)"
     ]
   }
 }
