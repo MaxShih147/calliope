@@ -41,25 +41,8 @@ export default function SettingsPage() {
       <div className="hairline mb-10" />
 
       <div className="max-w-md space-y-12 pb-16">
-        {/* API Key */}
-        <section className="animate-fade-up">
-          <p className="section-label mb-4">Anthropic API Key</p>
-          <input
-            type="password"
-            value={settings.apiKey}
-            onChange={(e) =>
-              setSettings({ ...settings, apiKey: e.target.value })
-            }
-            placeholder="sk-ant-..."
-            className="w-full bg-transparent font-mono text-sm text-foreground placeholder:text-stone-300 border-b border-rule pb-3 focus:outline-none focus:border-foreground transition-colors"
-          />
-          <p className="font-serif text-[0.75rem] italic text-stone-300 mt-3">
-            Stored locally in your browser. Never sent to our servers.
-          </p>
-        </section>
-
         {/* Default Tone */}
-        <section className="animate-fade-up" style={{ animationDelay: "0.05s" }}>
+        <section className="animate-fade-up">
           <p className="section-label mb-4">Default Tone</p>
           <div className="space-y-1">
             {TONES.map((t) => (

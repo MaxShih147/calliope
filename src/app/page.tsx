@@ -44,12 +44,6 @@ export default function ComposePage() {
       return;
     }
 
-    const settings = getSettings();
-    if (!settings.apiKey) {
-      setError("Please add your API key in Settings first.");
-      return;
-    }
-
     setLoading(true);
     setError("");
 
@@ -63,7 +57,7 @@ export default function ComposePage() {
         includeAdvancedExpressions: advancedExpressions,
       };
 
-      const lesson = await generateLesson(input, settings.apiKey);
+      const lesson = await generateLesson(input);
       saveLesson(lesson);
       router.push(`/lesson/${lesson.id}`);
     } catch (err) {

@@ -31,15 +31,14 @@ Include 5-8 vocabulary items, 4-6 phrases, 3-4 grammar points, 3-5 embedded patt
 }
 
 export async function generateLesson(
-  input: LessonInput,
-  apiKey: string
+  input: LessonInput
 ): Promise<Lesson> {
   const prompt = buildPrompt(input);
 
   const response = await fetch("/api/generate", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ prompt, apiKey }),
+    body: JSON.stringify({ prompt }),
   });
 
   if (!response.ok) {
