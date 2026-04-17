@@ -14,13 +14,18 @@ import {
 import { generateLesson } from "@/lib/ai";
 import { saveLesson, getSettings, getAllLessons } from "@/lib/storage";
 import { RecentLessons } from "@/components/recent-lessons";
-import { DiscoverTopics } from "@/components/discover-topics";
+import { GRE_WORDS } from "@/lib/gre-words";
+
+function pickRandomWords(count: number): string[] {
+  const shuffled = [...GRE_WORDS].sort(() => Math.random() - 0.5);
+  return shuffled.slice(0, count);
+}
 
 export default function ComposePage() {
   const router = useRouter();
   const [mounted, setMounted] = useState(false);
-  const [selectedScenario, setSelectedScenario] = useState("");
-  const [topic, setTopic] = useState("");
+  const [word, setWord] = useState("");
+  const [selectedScenario, setSelectedScenario] = useState("Business Correspondence");
   const [tone, setTone] = useState("professional");
   const [difficulty, setDifficulty] = useState("intermediate");
   const [length, setLength] = useState("medium");
@@ -28,6 +33,7 @@ export default function ComposePage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [recentLessons, setRecentLessons] = useState<Lesson[]>([]);
+  const [suggestions, setSuggestions] = useState<string[]>([]);
 
   useEffect(() => {
     setMounted(true);
@@ -36,11 +42,12 @@ export default function ComposePage() {
     if (settings.defaultDifficulty) setDifficulty(settings.defaultDifficulty);
     if (settings.defaultLength) setLength(settings.defaultLength);
     setRecentLessons(getAllLessons().slice(0, 5));
+    setSuggestions(pickRandomWords(12));
   }, []);
 
   async function handleCompose() {
-    if (!selectedScenario) {
-      setError("Please select a scenario.");
+    if (!word.trim()) {
+      setError("Please enter a word to explore.");
       return;
     }
 
@@ -49,8 +56,8 @@ export default function ComposePage() {
 
     try {
       const input: LessonInput = {
+        word: word.trim(),
         scenario: selectedScenario,
-        topic: topic || undefined,
         tone: tone as LessonInput["tone"],
         difficulty: difficulty as LessonInput["difficulty"],
         length: length as LessonInput["length"],
@@ -74,26 +81,68 @@ export default function ComposePage() {
       {/* Page title */}
       <div className="pt-12 pb-10 animate-fade-up">
         <h1 className="font-serif text-[2.5rem] font-light tracking-tight leading-[1.1] mb-3">
-          Compose
+          Explore
         </h1>
         <p className="font-serif text-[1.0625rem] italic text-stone-400 leading-relaxed">
-          Shape a speaking lesson around a scenario that matters to you.
+          Trace a word back to its roots — etymology, history, and living usage.
         </p>
       </div>
 
       <div className="hairline mb-10" />
 
-      {/* Scenario */}
+      {/* Word input */}
       <section className="mb-12 animate-fade-up" style={{ animationDelay: "0.05s" }}>
-        <p className="section-label mb-5">Scenario</p>
+        <p className="section-label mb-4">Word</p>
+        <input
+          value={word}
+          onChange={(e) => {
+            setWord(e.target.value);
+            setError("");
+          }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && !loading) handleCompose();
+          }}
+          placeholder="Enter a GRE word to explore..."
+          className="w-full bg-transparent font-serif text-[1.5rem] text-foreground placeholder:text-stone-300 placeholder:italic border-b-2 border-rule pb-3 focus:outline-none focus:border-foreground transition-colors"
+          autoFocus
+        />
+      </section>
+
+      {/* Word suggestions from GRE bank */}
+      <section className="mb-12 animate-fade-up" style={{ animationDelay: "0.08s" }}>
+        <div className="flex items-center justify-between mb-4">
+          <p className="section-label">Or pick one</p>
+          <button
+            onClick={() => setSuggestions(pickRandomWords(12))}
+            className="text-[0.75rem] tracking-wide text-stone-300 hover:text-foreground transition-colors"
+          >
+            Refresh
+          </button>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          {suggestions.map((w) => (
+            <button
+              key={w}
+              onClick={() => {
+                setWord(w);
+                setError("");
+              }}
+              className={`chip ${word === w ? "chip-active" : ""}`}
+            >
+              {w}
+            </button>
+          ))}
+        </div>
+      </section>
+
+      {/* Passage scenario */}
+      <section className="mb-12 animate-fade-up" style={{ animationDelay: "0.1s" }}>
+        <p className="section-label mb-5">Passage Scenario</p>
         <div className="flex flex-wrap gap-2.5">
           {SCENARIOS.map((scenario) => (
             <button
               key={scenario}
-              onClick={() => {
-                setSelectedScenario(scenario);
-                setError("");
-              }}
+              onClick={() => setSelectedScenario(scenario)}
               className={`chip ${selectedScenario === scenario ? "chip-active" : ""}`}
             >
               {scenario}
@@ -102,26 +151,10 @@ export default function ComposePage() {
         </div>
       </section>
 
-      {/* Topic input */}
-      <section className="mb-6 animate-fade-up" style={{ animationDelay: "0.1s" }}>
-        <p className="section-label mb-4">Topic</p>
-        <input
-          value={topic}
-          onChange={(e) => setTopic(e.target.value)}
-          placeholder="A subject to anchor the conversation..."
-          className="w-full bg-transparent font-serif text-base text-foreground placeholder:text-stone-300 placeholder:italic border-b border-rule pb-3 focus:outline-none focus:border-foreground transition-colors"
-        />
-      </section>
-
-      {/* Discover */}
-      <section className="mb-12 animate-fade-up" style={{ animationDelay: "0.15s" }}>
-        <DiscoverTopics onSelect={(title) => setTopic(title)} />
-      </section>
-
       <div className="hairline mb-10" />
 
       {/* Controls */}
-      <section className="mb-10 animate-fade-up" style={{ animationDelay: "0.2s" }}>
+      <section className="mb-10 animate-fade-up" style={{ animationDelay: "0.15s" }}>
         <div className="grid grid-cols-3 gap-12">
           <div>
             <p className="section-label mb-4">Tone</p>
@@ -171,7 +204,7 @@ export default function ComposePage() {
       </section>
 
       {/* Advanced toggle */}
-      <section className="mb-12 animate-fade-up" style={{ animationDelay: "0.25s" }}>
+      <section className="mb-12 animate-fade-up" style={{ animationDelay: "0.2s" }}>
         <div className="flex items-center gap-3">
           <Switch
             id="advanced"
@@ -193,19 +226,19 @@ export default function ComposePage() {
       )}
 
       {/* Compose button */}
-      <div className="mb-16 animate-fade-up" style={{ animationDelay: "0.3s" }}>
+      <div className="mb-16 animate-fade-up" style={{ animationDelay: "0.25s" }}>
         <button
           onClick={handleCompose}
           disabled={loading}
           className="btn-compose"
         >
-          {loading ? "Composing..." : "Compose"}
+          {loading ? "Exploring..." : "Explore"}
         </button>
       </div>
 
       {/* Recent */}
       {recentLessons.length > 0 && (
-        <section className="pb-16 animate-fade-up" style={{ animationDelay: "0.35s" }}>
+        <section className="pb-16 animate-fade-up" style={{ animationDelay: "0.3s" }}>
           <div className="hairline mb-10" />
           <p className="section-label mb-6">Recent</p>
           <RecentLessons lessons={recentLessons} />

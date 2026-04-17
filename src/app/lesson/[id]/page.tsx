@@ -46,12 +46,18 @@ export default function LessonPage() {
 
   return (
     <div className="mx-auto max-w-[720px] px-6">
-      {/* ── Article Header ── */}
+      {/* ── Header ── */}
       <header className="pt-14 pb-8 animate-fade-up">
         <p className="section-label mb-4">{lesson.scenario}</p>
-        <h1 className="font-serif text-[2.75rem] md:text-[3.25rem] font-light leading-[1.08] tracking-tight mb-5">
+        <h1 className="font-serif text-[2.75rem] md:text-[3.25rem] font-light leading-[1.08] tracking-tight mb-3">
           {lesson.title}
         </h1>
+        <div className="flex items-center gap-3 mb-5">
+          <span className="font-serif text-[1.75rem] text-accent font-normal tracking-tight">
+            {lesson.word}
+          </span>
+          <SpeakButton text={lesson.word} />
+        </div>
         <div className="flex items-center gap-6 text-[0.8125rem] text-stone-400">
           <time className="font-serif italic">{date}</time>
           <span className="text-stone-200">|</span>
@@ -72,39 +78,56 @@ export default function LessonPage() {
 
       <div className="hairline-strong mb-10" />
 
-      {/* ── Script ── */}
-      <article className="mb-16 animate-fade-up" style={{ animationDelay: "0.05s" }}>
-        <div className="flex items-start gap-3 mb-6">
-          <p className="section-label">Script</p>
-          <SpeakButton text={lesson.script} />
-        </div>
-        <div className="prose-editorial">
-          {lesson.script.split("\n").map((paragraph, i) =>
-            paragraph.trim() ? <p key={i}>{paragraph}</p> : null
-          )}
-        </div>
-      </article>
+      {/* ── Etymology ── */}
+      {lesson.etymology && (
+        <article className="mb-16 animate-fade-up" style={{ animationDelay: "0.05s" }}>
+          <div className="flex items-center gap-3 mb-6">
+            <p className="section-label">Etymology</p>
+            <SpeakButton text={`${lesson.etymology.origin}. ${lesson.etymology.breakdown}. ${lesson.etymology.history}`} />
+          </div>
+          <div className="mb-6">
+            <p className="entry-word mb-1">Origin</p>
+            <p className="font-serif text-[0.9375rem] text-stone-600 leading-relaxed">
+              {lesson.etymology.origin}
+            </p>
+          </div>
+          <div className="mb-6">
+            <p className="entry-word mb-1">Morphology</p>
+            <p className="font-serif text-[0.9375rem] text-stone-600 leading-relaxed">
+              {lesson.etymology.breakdown}
+            </p>
+          </div>
+          <div>
+            <p className="entry-word mb-2">History</p>
+            <div className="prose-editorial">
+              {lesson.etymology.history.split("\n").map((paragraph, i) =>
+                paragraph.trim() ? <p key={i}>{paragraph}</p> : null
+              )}
+            </div>
+          </div>
+        </article>
+      )}
 
-      {/* ── Vocabulary ── */}
-      {lesson.vocabulary.length > 0 && (
+      {/* ── Related Words ── */}
+      {lesson.relatedWords.length > 0 && (
         <section className="mb-14 animate-fade-up" style={{ animationDelay: "0.1s" }}>
           <div className="hairline mb-8" />
-          <p className="section-label mb-8">Vocabulary</p>
+          <p className="section-label mb-8">Word Family</p>
           <div className="grid gap-6">
-            {lesson.vocabulary.map((item, i) => (
+            {lesson.relatedWords.map((item, i) => (
               <div key={i} className="group">
                 <div className="flex items-center gap-2">
                   <span className="entry-word">{item.word}</span>
-                  <SpeakButton text={item.word} />
+                  <SpeakButton text={`${item.word}. ${item.meaning}. ${item.relationship}. ${item.example || ""}`} />
                 </div>
                 <p className="entry-meaning">{item.meaning}</p>
+                <p className="text-[0.8125rem] font-serif italic text-stone-400 mt-0.5">
+                  {item.relationship}
+                </p>
                 {item.example && (
-                  <div className="flex items-start gap-2 mt-1">
-                    <p className="entry-example flex-1">
-                      &ldquo;{item.example}&rdquo;
-                    </p>
-                    <SpeakButton text={item.example} />
-                  </div>
+                  <p className="entry-example mt-1">
+                    &ldquo;{item.example}&rdquo;
+                  </p>
                 )}
               </div>
             ))}
@@ -112,78 +135,53 @@ export default function LessonPage() {
         </section>
       )}
 
-      {/* ── Phrases ── */}
-      {lesson.phrases.length > 0 && (
+      {/* ── Examples ── */}
+      {lesson.examples.length > 0 && (
         <section className="mb-14 animate-fade-up" style={{ animationDelay: "0.15s" }}>
           <div className="hairline mb-8" />
-          <p className="section-label mb-8">Phrases</p>
-          <div className="grid gap-6">
-            {lesson.phrases.map((item, i) => (
-              <div key={i} className="group">
-                <div className="flex items-center gap-2">
-                  <span className="entry-word">{item.phrase}</span>
-                  <SpeakButton text={item.phrase} />
-                </div>
-                <p className="entry-meaning">{item.meaning}</p>
-                {item.example && (
-                  <div className="flex items-start gap-2 mt-1">
-                    <p className="entry-example flex-1">
-                      &ldquo;{item.example}&rdquo;
-                    </p>
-                    <SpeakButton text={item.example} />
-                  </div>
-                )}
-              </div>
-            ))}
+          <div className="flex items-center gap-3 mb-8">
+            <p className="section-label">Examples</p>
+            <SpeakButton text={lesson.examples.map((item) => item.sentence).join(". ")} />
           </div>
-        </section>
-      )}
-
-      {/* ── Grammar ── */}
-      {lesson.grammarPoints.length > 0 && (
-        <section className="mb-14 animate-fade-up" style={{ animationDelay: "0.2s" }}>
-          <div className="hairline mb-8" />
-          <p className="section-label mb-8">Grammar</p>
           <div className="grid gap-6">
-            {lesson.grammarPoints.map((item, i) => (
+            {lesson.examples.map((item, i) => (
               <div key={i}>
-                <p className="entry-word">{item.pattern}</p>
-                <p className="entry-meaning">{item.explanation}</p>
-                {item.example && (
-                  <div className="flex items-start gap-2 mt-1">
-                    <p className="entry-example flex-1">
-                      &ldquo;{item.example}&rdquo;
-                    </p>
-                    <SpeakButton text={item.example} />
-                  </div>
-                )}
+                <p className="entry-example">
+                  &ldquo;{item.sentence}&rdquo;
+                </p>
+                <p className="text-[0.8125rem] font-serif italic text-stone-400 mt-1">
+                  {item.context}
+                </p>
               </div>
             ))}
           </div>
         </section>
       )}
 
-      {/* ── Patterns ── */}
-      {lesson.embeddedPatterns.length > 0 && (
-        <section className="mb-14 animate-fade-up" style={{ animationDelay: "0.25s" }}>
+      {/* ── Passage ── */}
+      {lesson.passage && (
+        <article className="mb-14 animate-fade-up" style={{ animationDelay: "0.2s" }}>
           <div className="hairline mb-8" />
-          <p className="section-label mb-8">Patterns</p>
-          <div className="space-y-3">
-            {lesson.embeddedPatterns.map((pattern, i) => (
-              <div key={i} className="flex items-start gap-2">
-                <p className="pattern-line flex-1">{pattern}</p>
-                <SpeakButton text={pattern} />
-              </div>
-            ))}
+          <div className="flex items-start gap-3 mb-6">
+            <p className="section-label">Passage</p>
+            <SpeakButton text={lesson.passage} />
           </div>
-        </section>
+          <div className="prose-editorial">
+            {lesson.passage.split("\n").map((paragraph, i) =>
+              paragraph.trim() ? <p key={i}>{paragraph}</p> : null
+            )}
+          </div>
+        </article>
       )}
 
       {/* ── Practice ── */}
       {lesson.practiceTasks.length > 0 && (
-        <section className="mb-16 animate-fade-up" style={{ animationDelay: "0.3s" }}>
+        <section className="mb-16 animate-fade-up" style={{ animationDelay: "0.25s" }}>
           <div className="hairline mb-8" />
-          <p className="section-label mb-8">Practice</p>
+          <div className="flex items-center gap-3 mb-8">
+            <p className="section-label">Practice</p>
+            <SpeakButton text={lesson.practiceTasks.join(". ")} />
+          </div>
           <ol className="space-y-4">
             {lesson.practiceTasks.map((task, i) => (
               <li key={i} className="flex gap-4 text-[0.9375rem] leading-relaxed">

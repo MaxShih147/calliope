@@ -95,10 +95,10 @@ export default function ArchivePage() {
                 className="flex-1 min-w-0 group"
               >
                 <h3 className="font-serif text-[1rem] text-foreground group-hover:text-accent transition-colors line-clamp-1">
-                  {lesson.title}
+                  {lesson.word}
                 </h3>
                 <p className="text-[0.75rem] text-stone-400 mt-0.5 line-clamp-1">
-                  {lesson.scenario}
+                  {lesson.title}
                 </p>
               </Link>
 

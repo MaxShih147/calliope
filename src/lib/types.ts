@@ -1,20 +1,32 @@
 export type Lesson = {
   id: string;
   createdAt: string;
+  word: string;
   title: string;
   scenario: string;
-  script: string;
-  vocabulary: { word: string; meaning: string; example?: string }[];
-  phrases: { phrase: string; meaning: string; example?: string }[];
-  grammarPoints: { pattern: string; explanation: string; example?: string }[];
-  embeddedPatterns: string[];
+  etymology: {
+    origin: string;
+    breakdown: string;
+    history: string;
+  };
+  relatedWords: {
+    word: string;
+    meaning: string;
+    relationship: string;
+    example: string;
+  }[];
+  examples: {
+    sentence: string;
+    context: string;
+  }[];
+  passage: string;
   practiceTasks: string[];
   favorited?: boolean;
 };
 
 export type LessonInput = {
+  word: string;
   scenario: string;
-  topic?: string;
   tone: "neutral" | "professional" | "persuasive" | "reflective";
   difficulty: "beginner" | "intermediate" | "advanced";
   length: "short" | "medium" | "long";
@@ -22,16 +34,9 @@ export type LessonInput = {
 };
 
 export const SCENARIOS = [
-  "Work Discussion",
-  "Proposal",
-  "Disagreement",
+  "Business Correspondence",
   "Small Talk",
   "Presentation",
-  "Negotiation",
-  "Interview",
-  "Feedback",
-  "Brainstorm",
-  "Explanation",
 ] as const;
 
 export const TONES = [

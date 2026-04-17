@@ -23,7 +23,7 @@ export function RecentLessons({ lessons }: { lessons: Lesson[] }) {
             {formatDate(lesson.createdAt)}
           </span>
           <span className="font-serif text-[1rem] text-foreground group-hover:text-accent transition-colors line-clamp-1 flex-1">
-            {lesson.title}
+            {lesson.word}
           </span>
           <span className="section-label shrink-0">
             {lesson.scenario}
